@@ -89,10 +89,16 @@ namespace Proxy
                     int rc = 0;
                     Stream rs = context.Request.InputStream;
                     Stream ins = wReq.GetRequestStream();
+                    string s = context.Server.MapPath("~/") + "R\\"+System.Guid.NewGuid().ToString()+".txt";
+                    FileStream fs = File.Open(s, FileMode.OpenOrCreate);
+                    byte[] ru = System.Text.Encoding.UTF8.GetBytes(realUrl + "\r\n");
+                    fs.Write(ru, 0, ru.Length);
                     while ((rc = rs.Read(rd, 0, rd.Length)) > 0)
                     {
                         ins.Write(rd, 0, rc);
+                        fs.Write(rd,0,rc);
                     }
+                    fs.Close();
                     ins.Close();
 
                 }
@@ -119,20 +125,25 @@ namespace Proxy
 
         private void readResponse(HttpWebResponse wResp, HttpContext context, WebExceptionStatus s)
         {
-            foreach (string h in wResp.Headers.Keys)
-            {
-                if (!(h == "Content-Length" || h == "Transfer-Encoding"))
-                {
-                    context.Response.AppendHeader(h, wResp.Headers[h]);
-                }
-            }
-            if (s == WebExceptionStatus.ProtocolError)
-            {
-                context.Response.StatusCode = (int)wResp.StatusCode;
-            }
-            context.Response.ContentType = wResp.ContentType;
+            
             if (wResp != null)
             {
+                if (wResp.Headers != null)
+                {
+                    foreach (string h in wResp.Headers.Keys)
+                    {
+                        if (!(h == "Content-Length" || h == "Transfer-Encoding"))
+                        {
+                            context.Response.AppendHeader(h, wResp.Headers[h]);
+                        }
+                    }
+                }
+                if (s == WebExceptionStatus.ProtocolError)
+                {
+                    context.Response.StatusCode = (int)wResp.StatusCode;
+                }
+                context.Response.ContentType = wResp.ContentType;
+
                 using (wResp)
                 {
                     using (System.IO.Stream ins = wResp.GetResponseStream())
