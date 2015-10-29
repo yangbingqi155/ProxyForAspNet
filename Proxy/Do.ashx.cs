@@ -11,14 +11,14 @@ using System.Configuration;
 namespace Proxy
 {
     /// <summary>
-    /// Do 的摘要说明
+    /// 转发请求
     /// </summary>
     public class Do : IHttpHandler
     {
 
         public void ProcessRequest(HttpContext context)
         {
-            string realUrl = context.Request.Path;           
+            string realUrl = context.Request.Path;
             if (!string.IsNullOrWhiteSpace(realUrl))
             {
                 string ap = context.Request.ApplicationPath;
@@ -96,12 +96,12 @@ namespace Proxy
                     ins.Close();
 
                 }
-               
+
                 HttpWebResponse wResp;
                 try
                 {
-                    wResp = wReq.GetResponse() as HttpWebResponse;                    
-                    readResponse(wResp, context, WebExceptionStatus.Success);                    
+                    wResp = wReq.GetResponse() as HttpWebResponse;
+                    readResponse(wResp, context, WebExceptionStatus.Success);
                 }
                 catch (WebException ex)
                 {
@@ -117,13 +117,13 @@ namespace Proxy
 
 
 
-        private void readResponse(HttpWebResponse wResp, HttpContext context,WebExceptionStatus s)
-        {           
+        private void readResponse(HttpWebResponse wResp, HttpContext context, WebExceptionStatus s)
+        {
             foreach (string h in wResp.Headers.Keys)
             {
                 if (!(h == "Content-Length" || h == "Transfer-Encoding"))
-                {                   
-                    context.Response.AppendHeader(h, wResp.Headers[h]);                  
+                {
+                    context.Response.AppendHeader(h, wResp.Headers[h]);
                 }
             }
             if (s == WebExceptionStatus.ProtocolError)
